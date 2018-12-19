@@ -17,6 +17,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import fr.utt.if26.marcompte.groupe.AdapterGroup;
+import fr.utt.if26.marcompte.groupe.GroupPersistance;
 import fr.utt.if26.marcompte.groupe.Groupe;
 
 /**
