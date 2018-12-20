@@ -3,4 +3,8 @@
 
     <string name="tv_ma_title">Mes groupes</string>
     <string name="bt_ma_add">+</string>
+
+    <string name="tv_mga_infoTitle">Résumé des transactions: </string>
+    <string name="mi_mga_modifGroup">modifier le groupe</string>
+    <string name="mi_mga_deletGroup">supprimer le groupe</string>
 </resources>

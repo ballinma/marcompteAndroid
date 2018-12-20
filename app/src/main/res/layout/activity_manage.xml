@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ManageActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
+        <!--
+                <TextView
+                    android:id="@+id/tv_mga_groupName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TextView" />
+        -->
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="40dp">
+
+            <TextView
+                android:id="@+id/tv_mga_infoTitle"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_mga_infoTitle" />
+
+            <Button
+                android:id="@+id/bt_mga_add"
+                android:layout_width="49dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="50dp"
+                android:text="@string/bt_ma_add" />
+
+        </TableRow>
+
+        <ListView
+            android:id="@+id/lv_mga_infoContent"
+            android:layout_width="match_parent"
+            android:layout_height="148dp" />
+
+        <TextView
+            android:id="@+id/tv_mga_total"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:text="TextView" />
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>

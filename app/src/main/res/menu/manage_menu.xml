@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mi_mga_modifGroup"
+        android:title="@string/mi_mga_modifGroup" />
+    <item
+        android:id="@+id/mi_mga_deletGroup"
+        android:title="@string/mi_mga_deletGroup" />
+</menu>
