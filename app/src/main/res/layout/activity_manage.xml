@@ -38,6 +38,12 @@
 
         </TableRow>
 
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/piechart_1"
+            android:layout_width="match_parent"
+            android:layout_height="220sp">
+        </com.github.mikephil.charting.charts.PieChart>
+
         <ListView
             android:id="@+id/lv_mga_infoContent"
             android:layout_width="match_parent"

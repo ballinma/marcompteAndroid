@@ -22,6 +22,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
 import java.util.ArrayList;
 
 import fr.utt.if26.marcompte.groupe.GroupPersistance;
@@ -40,7 +46,7 @@ public class ManageActivity extends AppCompatActivity implements View.OnClickLis
     TextView tv_total;
     ListView lv_transactions;
     Button bt_add;
-
+    PieChart pieChart;
 
     String transactionName;
     String transactionType;
@@ -87,7 +93,7 @@ public class ManageActivity extends AppCompatActivity implements View.OnClickLis
         bt_add = (Button) findViewById(R.id.bt_mga_add);
         bt_add.setOnClickListener(this);
 
-
+        setPieChart();
 
     }
 
@@ -368,6 +374,36 @@ public class ManageActivity extends AppCompatActivity implements View.OnClickLis
         adapter = new AdapterTransaction(ManageActivity.this, R.layout.transaction, transactions);
         lv_transactions.setAdapter(adapter);
         tv_total.setText("Total: " + String.format("%.2f",actualGroupe.getTotalTransaction()));
+        pieChart.clear();
+        setPieChart();
+    }
+
+    public void setPieChart() {
+        this.pieChart = (PieChart) findViewById(R.id.piechart_1);
+        pieChart.setUsePercentValues(true);
+        //pieChart.getDescription().setEnabled(true);
+        //pieChart.setExtraOffsets(5,10,5,5);
+        //pieChart.setDragDecelerationFrictionCoef(0.9f);
+        //pieChart.setTransparentCircleRadius(61f);
+        //pieChart.setHoleColor(Color.WHITE);
+        //pieChart.animateY(1000, Easing.EasingOption.EaseInOutCubic);
+        ArrayList<PieEntry> yValues = new ArrayList<>();
+        yValues.add(new PieEntry(actualGroupe.getTransactionsTotalOfType("Nourriture"),"Nourriture"));
+        yValues.add(new PieEntry(actualGroupe.getTransactionsTotalOfType("Logement"),"Logement"));
+        yValues.add(new PieEntry(actualGroupe.getTransactionsTotalOfType("Transport"),"Transport"));
+        yValues.add(new PieEntry(actualGroupe.getTransactionsTotalOfType("Cadeaux"),"Cadeaux"));
+        yValues.add(new PieEntry(actualGroupe.getTransactionsTotalOfType("Autres"),"Autres"));
+
+        PieDataSet dataSet = new PieDataSet(yValues, "");
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(5f);
+        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        PieData pieData = new PieData((dataSet));
+        pieData.setValueTextSize(10f);
+
+        pieData.setValueTextColor(Color.WHITE);
+        pieChart.setData(pieData);
+        //PieChart Ends Here
     }
 
 }
