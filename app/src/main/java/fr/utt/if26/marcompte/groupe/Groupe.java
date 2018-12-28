@@ -1,13 +1,18 @@
 package fr.utt.if26.marcompte.groupe;
 
+import android.util.Log;
+
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
+import fr.utt.if26.marcompte.Sha;
 import fr.utt.if26.marcompte.transaction.Transaction;
 
 public class Groupe implements Serializable {
 
     private String name;
+    private String password;
     private int nbParticipants;
     private ArrayList<Transaction> transactions;
     //private ArrayList<Participant> participants;
@@ -17,9 +22,10 @@ public class Groupe implements Serializable {
      * @param name nom du groupe (doit être unique)
      * @param nbParticipants nombre de participants au groupe
      */
-    public Groupe(String name, int nbParticipants){
+    public Groupe(String name, String password, int nbParticipants){
         transactions = new ArrayList<Transaction>();
         this.setName(name);
+        this.setPassword(hashPassword(password));
         this.setNbParticipants(nbParticipants);
         this.setTransactions(transactions);
     }
@@ -30,8 +36,9 @@ public class Groupe implements Serializable {
      * @param nbParticipants nombre de participants au groupe
      * @param transactions liste des transactions associées
      */
-    public Groupe(String name, int nbParticipants, ArrayList<Transaction> transactions){
+    public Groupe(String name, String password, int nbParticipants, ArrayList<Transaction> transactions){
         this.setName(name);
+        this.setPassword(password);
         this.setNbParticipants(nbParticipants);
         this.setTransactions(transactions);
     }
@@ -43,6 +50,10 @@ public class Groupe implements Serializable {
     private void setName(String name) {
         this.name = name;
     }
+
+    public String getPassword() { return password; }
+
+    private void setPassword(String password) { this.password = password; }
 
     public ArrayList<Transaction> getTransactions() { return transactions; }
 
@@ -124,5 +135,28 @@ public class Groupe implements Serializable {
         test =  test.replace(",",".");
         float test1 = Float.valueOf(test);
         return test1;
+    }
+
+    private String hashPassword(String password) {
+        String passToSave = "";
+        Sha hash = new Sha();
+        try {
+            passToSave = hash.hash256(password);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            Log.d("hashError",e.toString());
+        }
+        Log.d("hashSaved", "" + passToSave );
+         return passToSave;
+    }
+
+    @Override
+    public String toString() {
+        return "Groupe{" +
+                "name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", nbParticipants=" + nbParticipants +
+                ", transactions=" + transactions +
+                '}';
     }
 }

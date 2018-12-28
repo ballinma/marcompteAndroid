@@ -57,12 +57,15 @@ public class ManageActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_manage);
 
-        persistance = new GroupPersistance(this, "groups.db", null, 1);
+        persistance = new GroupPersistance(this, "save.db", null, 1);
 
         //tv_groupName = (TextView) findViewById(R.id.tv_mga_groupName);
         Intent intent = getIntent();
         String groupName = intent.getStringExtra("groupName");
         actualGroupe = persistance.getGroup(groupName);
+
+        Log.d("groupNameTransfered", groupName);
+        Log.d("groupInfo", actualGroupe.toString());
 
         //tv_groupName.setText(actualGroupe.getName() + ": " + actualGroupe.getNbParticipants() + " particpants");
 
@@ -238,7 +241,6 @@ public class ManageActivity extends AppCompatActivity implements View.OnClickLis
                     if(transactionName.toLowerCase().equals(t.getName().toLowerCase())){
                         Toast.makeText(ManageActivity.this, "Ce nom de groupe existe déjà.", Toast.LENGTH_SHORT).show();
                         alreadyExist = true;
-                        Log.d("transactionss: ", "" + t.getName());
                     }
                 }
                 if((transactionName.equals("") || (et_transacPrice.getText().toString().equals("")))){

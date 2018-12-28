@@ -22,10 +22,11 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
         super(context, name, factory, version);
     }
 
-    public static final int DATABASE_VERSION = 2;
-    public static final String DATABASE_NAME = "groups.db";
+    public static final int DATABASE_VERSION = 1;
+    public static final String DATABASE_NAME = "save.db";
     private static final String TABLE_GROUP = "groupes";
     private static final String ATTRIBUT_NAME = "nom";
+    private static final String ATTRIBUT_PASSWORD = "password";
     private static final String ATTRIBUT_NBPARTICIPANTS = "participants";
     private static final String ATTRIBUT_TRANSACTIONS = "transactions";
 
@@ -34,6 +35,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
         final String table_group_create =
                 "CREATE TABLE " + TABLE_GROUP + "("
                         + ATTRIBUT_NAME + " TEXT primary key,"
+                        + ATTRIBUT_PASSWORD + " TEXT,"
                         + ATTRIBUT_NBPARTICIPANTS + " INT,"
                         + ATTRIBUT_TRANSACTIONS + " TEXT"
                         //+ ATTRIBUT_TOTAL + " DOUBLE"
@@ -63,7 +65,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
             json.put("transactionList", jArray);
             Log.d("transactions liste: ",""+jArray);
         } catch (JSONException jse) {
-            Log.d("transaction erroor: ", ""+jse);
+            Log.d("transaction error: ", ""+jse);
         }
         String transactionList = json.toString();
 
@@ -71,18 +73,24 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
 
         ContentValues values = new ContentValues();
         values.put(ATTRIBUT_NAME, g.getName());
+        values.put(ATTRIBUT_PASSWORD, g.getPassword());
         values.put(ATTRIBUT_NBPARTICIPANTS, g.getNbParticipants());
         values.put(ATTRIBUT_TRANSACTIONS, transactionList);
 
-        System.out.println(values.toString());
+        Log.d("addNewGroup", values.toString());
+        try {
+            db.insertOrThrow(TABLE_GROUP, null, values);
+        } catch(Exception e) {
+            e.printStackTrace();
+            Log.d("tableError", e.toString());
+        }
 
-        db.insert(TABLE_GROUP, null, values);
         db.close();
     }
 
     @Override
     public void initData() {
-        addNewGroup(new Groupe("Bienvenue!", 1));
+        addNewGroup(new Groupe("Bienvenue!", "", 1));
     }
 
     @Override
@@ -122,7 +130,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
 
     @Override
     public Groupe getGroup(String key) {
-        Groupe g = new Groupe("",0);
+        Groupe g = new Groupe("", "", 1);
         String selectQuery = "SELECT  * FROM " + TABLE_GROUP + " WHERE "+ ATTRIBUT_NAME +" = " + "\'" + key + "\';";
 
         SQLiteDatabase db = this.getReadableDatabase();
@@ -134,7 +142,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
                 ArrayList<Transaction> transactions = new ArrayList<Transaction>();
                 try
                 {
-                    JSONObject json = new JSONObject(cursor.getString(2));
+                    JSONObject json = new JSONObject(cursor.getString(3));
                     JSONArray cast = json.getJSONArray("transactionList");
                     for (int i=0; i<cast.length(); i++) {
                         JSONObject transactionJSON = cast.getJSONObject(i);
@@ -145,7 +153,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
                 } catch (JSONException jse) {
                     Log.d("getgroup", g.getName()+"JSON ERROR "+jse);
                 }
-                g = new Groupe(cursor.getString(0),Integer.parseInt(cursor.getString(1)),transactions);
+                g = new Groupe(cursor.getString(0),cursor.getString(1),Integer.parseInt(cursor.getString(2)),transactions);
             } while (cursor.moveToNext());
         }
         db.close();
@@ -170,7 +178,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
                 ArrayList<Transaction> transactions = new ArrayList<Transaction>();
                 try
                 {
-                    JSONObject json = new JSONObject(cursor.getString(2));
+                    JSONObject json = new JSONObject(cursor.getString(3));
                     JSONArray cast = json.getJSONArray("transactionList");
                     for (int i=0; i<cast.length(); i++) {
                         JSONObject transactionJSON = cast.getJSONObject(i);
@@ -181,7 +189,7 @@ public class GroupPersistance extends SQLiteOpenHelper implements GroupPersistan
                     Log.d("getAllgroups", cursor.getString(0)+" "+jse+" ("+cursor.getString(2)+")");
                 }
                 // rajouter les paramètres au constructeur
-                Groupe g = new Groupe(cursor.getString(0),Integer.parseInt(cursor.getString(1)),transactions);
+                Groupe g = new Groupe(cursor.getString(0),cursor.getString(1),Integer.parseInt(cursor.getString(2)),transactions);
 
                 mesGroupes.add(g);
             } while (cursor.moveToNext());

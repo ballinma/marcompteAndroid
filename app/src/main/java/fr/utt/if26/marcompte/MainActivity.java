@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -14,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import fr.utt.if26.marcompte.groupe.AdapterGroup;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     GroupPersistance persistance;
     AdapterGroup adapter;
     String pu_groupName = "";
+    String pu_groupPassword = "";
     int pu_nbParticipant = 1;
 
     @Override
@@ -42,15 +45,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bt_add.setOnClickListener(this);
 
         lv_group = (ListView) findViewById(R.id.lv_ma_group);
-        persistance = new GroupPersistance(this, "groups.db", null, 1);
-        //persistance.onUpgrade(persistance.getWritableDatabase(),1,2);
+        persistance = new GroupPersistance(this, "save.db", null, 1);
+        //persistance.onUpgrade(persistance.getWritableDatabase(),3,4);
         //persistance.initData();
-        System.out.println(persistance.toString());
+        Log.d("InitData",persistance.toString());
         groups = persistance.getAllGroups();
         /*for(Groupe g: groups){
             persistance.delGroup(g);
         }*/
-        persistance.initData();
+        //persistance.initData();
 
         adapter = new AdapterGroup(this, R.layout.groupe, groups);
         lv_group.setAdapter(adapter);
@@ -58,10 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             @Override
             public void onItemClick(AdapterView<?> arg0, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, ManageActivity.class);
-                Groupe gtmp = (Groupe) lv_group.getItemAtPosition(position);
-                intent.putExtra("groupName", gtmp.getName());
-                startActivity(intent);
+                askForPass(position);
             }
         });
 
@@ -79,6 +79,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 et_groupName.setHint("Nom");
                 et_groupName.setInputType(InputType.TYPE_CLASS_TEXT);
                 layout.addView(et_groupName);
+                final EditText et_password = new EditText(this);
+                et_password.setHint("Mot de passe");
+                et_password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                layout.addView(et_password);
                 final EditText et_groupNbParticipant = new EditText(this);
                 et_groupNbParticipant.setHint("Nombre de Participants");
                 et_groupNbParticipant.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -90,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     public void onClick(DialogInterface dialog, int which) {
                         boolean alreadyExist = false;
                         pu_groupName = et_groupName.getText().toString();
+                        pu_groupPassword = et_password.getText().toString();
+
                         // faire des vérifications si le nom n'existe pas déjà et non vide
                         for(Groupe g: groups){
                             if(pu_groupName.toLowerCase().equals(g.getName().toLowerCase())){
@@ -105,8 +111,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 Toast.makeText(MainActivity.this, "Le nombre de participants doit être compris entre 1 et 50.", Toast.LENGTH_SHORT).show();
                             }else if(!alreadyExist){
                                 // new intent et ajout à la bdd
-                                Groupe newG = new Groupe(pu_groupName, pu_nbParticipant);
+                                Groupe newG = new Groupe(pu_groupName, pu_groupPassword, pu_nbParticipant);
+                                Log.d("groupInfo", newG.toString());
                                 persistance.addNewGroup(newG);
+                                Log.d("Group creation", "name: " + pu_groupName + "\n pass: " + pu_groupPassword + "\n nb: " + pu_nbParticipant);
                                 Intent intent = new Intent(MainActivity.this, ManageActivity.class);
                                 intent.putExtra("groupName", pu_groupName);
                                 startActivity(intent);
@@ -130,4 +138,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
+    public void askForPass(int position){
+        final Groupe gtmp = (Groupe) lv_group.getItemAtPosition(position);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Mot de passe du groupe" + gtmp.getName());
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        final EditText et_password = new EditText(this);
+        et_password.setHint("Mot de passe");
+        et_password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        layout.addView(et_password);
+        builder.setView(layout);
+
+        builder.setPositiveButton("Entrer", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String passSaved = gtmp.getPassword();
+                String passFilledUp = et_password.getText().toString();
+                Sha hash = new Sha();
+                try {
+                    passFilledUp = hash.hash256(passFilledUp);
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                    Log.d("hashError",e.toString() + ", passFilledUp: " + passFilledUp);
+                }
+                Log.d("hashTest", "rempli: " + passFilledUp + " \n saved: " + passSaved);
+                if(passFilledUp.equals(passSaved)){
+                    Intent intent = new Intent(MainActivity.this, ManageActivity.class);
+                    intent.putExtra("groupName", gtmp.getName());
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(MainActivity.this, "Mot de passe éronné.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    /**
+     * Permet de mettre à jour l'adapter à chaque fois que l'utilisateur revient à cette activité
+     */
+    public  void onResume() {
+        super.onResume();
+        adapter.clear(); groups = persistance.getAllGroups(); adapter = new AdapterGroup(this, R.layout.groupe, groups);lv_group.setAdapter(adapter);
+        Log.d("InitData",persistance.toString());
+    }
+
 }
